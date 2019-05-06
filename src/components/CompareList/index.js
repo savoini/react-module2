@@ -3,11 +3,15 @@ import PropTypes from 'prop-types';
 
 import { Container, Repository } from './styles';
 
-const CompareList = ({ repositories }) => (
+const CompareList = ({ repositories, onRefresh, onDelete }) => (
   <Container>
     {repositories.map(repository => (
       <Repository key={repository.id}>
         <header>
+          <div>
+            <i className="fa fa-trash" onClick={() => onDelete(repository)} />
+            <i className="fa fa-refresh" onClick={() => onRefresh(repository)} />
+          </div>
           <img src={repository.owner.avatar_url} alt={repository.owner.login} />
           <strong>{repository.name}</strong>
           <small>{repository.owner.login}</small>

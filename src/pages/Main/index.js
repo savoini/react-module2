@@ -16,13 +16,32 @@ class Main extends Component {
 
   handleAddRepository = async (e) => {
     e.preventDefault();
+    const { repositoryInput } = this.state;
+    await this.loadRepository(repositoryInput);
+  };
+
+  refreshRepository = async (repository) => {
+    await this.loadRepository(repository.full_name);
+  };
+
+  deleteRepository = async (repository) => {
+    if (repository) {
+      const { repositories: repos } = this.state;
+      const repositories = repos.filter(repo => repo.id !== repository.id);
+      this.setState({ repositories });
+    }
+  };
+
+  loadRepository = async (name) => {
     this.setState({ loading: true });
     try {
-      const { repositoryInput, repositories } = this.state;
-      const { data: repository } = await api.get(`/repos/${repositoryInput}`);
+      const { data: repository } = await api.get(`/repos/${name}`);
+
+      await this.deleteRepository(repository);
 
       repository.lastCommit = moment(repository.pushed_at).fromNow();
 
+      const { repositories } = this.state;
       repositories.push(repository);
 
       this.setState({ repositoryError: false, repositoryInput: '', repositories });
@@ -51,7 +70,11 @@ class Main extends Component {
 
           <button type="submit">{loading ? <i className="fa fa-spinner fa-pulse" /> : 'OK'}</button>
         </Form>
-        <CompareList repositories={repositories} />
+        <CompareList
+          repositories={repositories}
+          onRefresh={this.refreshRepository}
+          onDelete={this.deleteRepository}
+        />
       </Container>
     );
   }

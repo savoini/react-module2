@@ -17,10 +17,21 @@ export const Repository = styled.div`
   flex-direction: column;
 
   header {
-    padding: 30px;
+    padding: 15px;
     display: flex;
     flex-direction: column;
     align-items: center;
+
+    div {
+      width: 100%;
+      display: flex;
+      flex-direction: row-reverse;
+      align-items: flex-end;
+
+      i {
+        margin-left: 10px;
+      }
+    }
 
     img {
       width: 64px;
