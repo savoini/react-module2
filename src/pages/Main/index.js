@@ -14,6 +14,13 @@ class Main extends Component {
     repositories: [],
   };
 
+  componentDidMount() {
+    const repositories = localStorage.getItem('github_repo');
+    if (repositories) {
+      this.setState({ repositories: JSON.parse(repositories) });
+    }
+  }
+
   handleAddRepository = async (e) => {
     e.preventDefault();
     const { repositoryInput } = this.state;
@@ -24,10 +31,24 @@ class Main extends Component {
     await this.loadRepository(repository.full_name);
   };
 
+  findRepository = async (repository) => {
+    const { repositories } = this.state;
+
+    let i = -1;
+    repositories.forEach((repo, index) => {
+      if (repo.id === repository.id) {
+        i = index;
+      }
+    });
+    return i;
+  };
+
   deleteRepository = async (repository) => {
     if (repository) {
       const { repositories: repos } = this.state;
       const repositories = repos.filter(repo => repo.id !== repository.id);
+
+      localStorage.setItem('github_repo', JSON.stringify(repositories));
       this.setState({ repositories });
     }
   };
@@ -36,14 +57,18 @@ class Main extends Component {
     this.setState({ loading: true });
     try {
       const { data: repository } = await api.get(`/repos/${name}`);
-
-      await this.deleteRepository(repository);
-
       repository.lastCommit = moment(repository.pushed_at).fromNow();
 
       const { repositories } = this.state;
-      repositories.push(repository);
 
+      const index = await this.findRepository(repository);
+      if (index >= 0) {
+        repositories[index] = repository;
+      } else {
+        repositories.push(repository);
+      }
+
+      localStorage.setItem('github_repo', JSON.stringify(repositories));
       this.setState({ repositoryError: false, repositoryInput: '', repositories });
     } catch (err) {
       this.setState({ repositoryError: true });
